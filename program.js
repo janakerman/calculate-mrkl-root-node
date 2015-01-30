@@ -144,4 +144,18 @@
     ]
   };
 
+  var Block = function(rawBlock) {
+    return {
+      getMerkleTree: function() {
+        return rawBlock.mrkl_tree;
+      }
+    };
+  };
+
+  var block = new Block(rawBlock);
+
+  console.log(block.getMerkleTree());
+
+
+
 })();
