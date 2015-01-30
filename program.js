@@ -1,5 +1,7 @@
 (function() {
 
+  var crypto = require('crypto');
+
   var rawBlock = {
     "hash":"00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d",
     "ver":1,
@@ -152,10 +154,73 @@
     };
   };
 
+  var reverseHex = function (hexString) {
+    var splitByLength = function (string, splitLength) {
+      var chunks = [];
+
+      for (var i = 0, charsLength = string.length; i < charsLength; i += splitLength) {
+        chunks.push(string.substring(i, i + splitLength));
+      };
+
+      return chunks;
+    }
+
+    return splitByLength(hexString, 2).reverse().join('');
+  };
+
+  var hex2Bin = function (hex) {
+    var bytes = [];
+
+    for(var i=0; i< hex.length-1; i+=2){
+      bytes.push(parseInt(hex.substr(i, 2), 16));
+    }
+
+    return String.fromCharCode.apply(String, bytes);
+  }
+
+  var combineHashes = function (hash1, hash2) {
+    // Reverse hex - reverse combined or individual?
+    var combinedBinary = hex2Bin(reverseHex(hash1 + hash2));
+
+    var pass1 = crypto.createHash('sha256').update(combinedBinary, 'binary').digest('binary');
+    return crypto.createHash('sha256').update(hash1, 'binary').digest('hex');
+  }
+
+  var layer = 0;
+
+  console.log("=== Start Merkle Root Calculation ===\n");
+
+  var calculateMerkleRoot = function(merkleTree) {
+    if (merkleTree.length == 1) {
+      return merkleTree[0];
+    }
+
+    console.log("=== Layer " + layer + " ===\n");
+
+    if (merkleTree.length % 2 != 0) {
+      merkleTree.push(merkleTree[merkleTree.length-1]);
+    }
+
+    var newLeaves = [];
+    for (var x=0; x<merkleTree.length; x+=2) {
+
+      console.log("=== Leave " + x + " ===\n");
+      console.log("Hash1: " + merkleTree[x] + "\n");
+      console.log("Hash2: " + merkleTree[x+1] + "\n");
+      console.log("Result: " + combineHashes(merkleTree[x], merkleTree[x+1]) + "\n");
+
+      newLeaves.push(combineHashes(merkleTree[x], merkleTree[x+1]));
+    }
+
+    layer++;
+
+    return calculateMerkleRoot(newLeaves);
+  }
+
   var block = new Block(rawBlock);
+  var root = calculateMerkleRoot(block.getMerkleTree());
 
-  console.log(block.getMerkleTree());
-
-
+  console.log("=== Merkle Root ===\n");
+  console.log(root);
 
 })();
