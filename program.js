@@ -148,8 +148,8 @@
 
   var Block = function(rawBlock) {
     return {
-      getMerkleTree: function() {
-        return rawBlock.mrkl_tree;
+      getTransactions: function() {
+        return rawBlock.tx;
       }
     };
   };
@@ -218,7 +218,15 @@
   }
 
   var block = new Block(rawBlock);
-  var root = calculateMerkleRoot(block.getMerkleTree());
+
+  var bottomNodes = block.getTransactions().map(function (current, index, array) {
+    return current.hash;
+  });
+
+  console.log("=== Bottom Leaves ===");
+  console.log(bottomNodes);
+
+  var root = calculateMerkleRoot(bottomNodes);
 
   console.log("=== Merkle Root ===\n");
   console.log(root);
