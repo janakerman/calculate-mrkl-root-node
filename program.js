@@ -180,10 +180,10 @@
 
   var combineHashes = function (hash1, hash2) {
     // Reverse hex - reverse combined or individual?
-    var combinedBinary = hex2Bin(reverseHex(hash1 + hash2));
+    var combinedBinary = hex2Bin(reverseHex(hash1) + reverseHex(hash2));
 
     var pass1 = crypto.createHash('sha256').update(combinedBinary, 'binary').digest('binary');
-    return crypto.createHash('sha256').update(hash1, 'binary').digest('hex');
+    return reverseHex(crypto.createHash('sha256').update(pass1, 'binary').digest('hex'));
   }
 
   var layer = 0;
